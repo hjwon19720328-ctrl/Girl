@@ -85,7 +85,31 @@
             width: 100%;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            /* 제목이 위로 올라가는 속도를 1.5초로 늦춰서 부드럽게 만듦 */
+            transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .title-wrapper {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .main-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin: 0;
+            transition: all 1.5s ease;
+        }
+
+        .sub-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            margin-top: 5px;
+            align-self: flex-end; /* 제목 밑에서 오른쪽으로 치우치게 배치 */
+            transition: all 1.5s ease;
         }
 
         /* 애니메이션 트리거 후 상단 바 형태로 변신 */
@@ -95,7 +119,6 @@
             transform: translate(0, 0);
             width: 100%;
             padding: 15px 70px;
-            text-align: center;
             background: rgba(255, 255, 255, 0.95);
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             backdrop-filter: blur(5px);
@@ -103,29 +126,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 1;
-            visibility: visible;
         }
 
-        .main-title {
-            font-family: 'Noto Serif KR', serif;
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin: 0;
-            transition: all 0.6s ease;
+        #header-title.active .title-wrapper {
+            flex-direction: row;
+            align-items: baseline;
         }
 
-        .sub-title {
-            font-family: 'Noto Serif KR', serif;
-            font-size: 1.2rem;
-            color: var(--secondary-color);
-            margin-top: 5px;
-            transition: all 0.6s ease;
+        /* 상단 바 상태일 때 글자 크기 축소 및 일렬 배치 */
+        #header-title.active .main-title { font-size: 1.3rem; margin: 0; }
+        #header-title.active .sub-title { 
+            font-size: 1rem; 
+            margin: 0 0 0 10px; 
+            align-self: auto; 
         }
-
-        /* 상단 바 상태일 때 글자 한 줄로 합치고 크기 축소 */
-        #header-title.active .main-title { font-size: 1.2rem; margin: 0; }
-        #header-title.active .sub-title { font-size: 1rem; margin: 0 0 0 10px; }
         #header-title.active .sub-title::before { content: "- "; }
 
         /* 햄버거 메뉴 (우측 상단 3선) */
@@ -136,6 +150,12 @@
             cursor: pointer;
             z-index: 1001;
             display: none;
+            opacity: 0;
+            animation: fadeInMenu 1s forwards 1.5s; /* 제목이 올라간 후 등장 */
+        }
+
+        @keyframes fadeInMenu {
+            to { opacity: 1; }
         }
 
         .bar {
@@ -176,16 +196,15 @@
             font-weight: bold;
         }
 
-        /* 메인 콘텐츠 영역 */
+        /* 메인 콘텐츠 영역 (상단 여백을 140px로 늘려 이미지 잘림 해결) */
         #main-content {
-            padding: 80px 15px 50px 15px;
+            padding: 140px 15px 50px 15px; 
             max-width: 1200px;
             margin: 0 auto;
             display: none;
-            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+            animation: fadeInMenu 1s forwards 1s; /* 서서히 등장 */
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -218,9 +237,9 @@
 
         .char-img {
             width: 100%;
-            height: 300px;
+            height: 350px; /* 이미지 영역을 조금 더 넓힘 */
             object-fit: cover;
-            object-position: top;
+            object-position: center 20%; /* 이미지가 위주로 잘리지 않도록 포커스 조정 */
             border-bottom: 2px solid #fff0f3;
         }
 
@@ -297,15 +316,12 @@
 </head>
 <body>
 
-    <!-- 같은 폴더에 있는 ll.mp3 파일을 불러옵니다 -->
+    <!-- 음악 재생 (같은 폴더의 ll.mp3) -->
     <audio id="bgm" loop>
         <source src="ll.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- 좌측 상단 음소거 버튼 -->
-    <div id="mute-btn" onclick="toggleMute()" title="음소거 켜기/끄기">
-        🔊
-    </div>
+    <div id="mute-btn" onclick="toggleMute()" title="음소거 켜기/끄기">🔊</div>
 
     <!-- 시작 화면 -->
     <div id="intro-screen">
@@ -314,8 +330,10 @@
 
     <!-- 상단 헤더 타이틀 -->
     <div id="header-title">
-        <h1 class="main-title">너의 옆에 있고싶어</h1>
-        <p class="sub-title">정실이 아니더라도</p>
+        <div class="title-wrapper">
+            <h1 class="main-title">너의 옆에 있고싶어</h1>
+            <p class="sub-title">정실이 아니더라도</p>
+        </div>
     </div>
 
     <!-- 우측 상단 햄버거 메뉴 -->
@@ -334,11 +352,10 @@
     <!-- 메인 콘텐츠 -->
     <main id="main-content">
         
-        <!-- 캐릭터 소개 탭 -->
         <section id="character-tab" class="tab-content active">
             <div class="character-container">
                 
-                <!-- 캐릭터 1: 서하린 -->
+                <!-- 서하린 -->
                 <div class="character-card">
                     <img src="https://igx.kr/u/Phc/d/1" alt="서하린" class="char-img">
                     <div class="char-info">
@@ -356,7 +373,7 @@
                     </div>
                 </div>
 
-                <!-- 캐릭터 2: 이다인 -->
+                <!-- 이다인 -->
                 <div class="character-card">
                     <img src="https://igx.kr/u/Phc/c/1" alt="이다인" class="char-img">
                     <div class="char-info">
@@ -377,7 +394,7 @@
             </div>
         </section>
 
-        <!-- 웹툰 탭 -->
+        <!-- 웹툰 -->
         <section id="webtoon-tab" class="tab-content">
             <div class="webtoon-viewer">
                 <img src="https://igx.kr/u/Hhc/c/c" alt="웹툰 1">
@@ -393,23 +410,29 @@
         const audio = document.getElementById('bgm');
         const muteBtn = document.getElementById('mute-btn');
 
-        // 시작 버튼 클릭 시 작동
         function startExperience() {
-            // 음악 재생 시도
-            audio.play().catch(e => console.log("오디오 재생 오류 (같은 폴더에 ll.mp3 파일이 있는지 확인해주세요)"));
+            audio.play().catch(e => console.log("오디오 재생 오류"));
             
-            // 인트로 화면 숨기기
+            // 인트로 가리기
             const intro = document.getElementById('intro-screen');
             intro.style.opacity = '0';
             setTimeout(() => { intro.style.display = 'none'; }, 500);
 
-            // 제목 애니메이션 및 메인 콘텐츠 표시
-            document.getElementById('header-title').classList.add('active');
-            document.getElementById('menu-btn').style.display = 'block';
-            document.getElementById('main-content').style.display = 'block';
+            // 1단계: 가운데에 지그재그 제목 띄우기
+            const headerTitle = document.getElementById('header-title');
+            headerTitle.style.opacity = '1';
+            headerTitle.style.visibility = 'visible';
+            
+            // 2단계: 1.5초 정도 감상할 틈을 준 뒤 위로 천천히 올라가게 하기
+            setTimeout(() => {
+                headerTitle.classList.add('active');
+                
+                // 메인 콘텐츠와 버튼 나타내기
+                document.getElementById('menu-btn').style.display = 'block';
+                document.getElementById('main-content').style.display = 'block';
+            }, 1500); 
         }
 
-        // 음소거 켜기/끄기 토글 기능
         function toggleMute() {
             if (audio.muted) {
                 audio.muted = false;
@@ -420,12 +443,10 @@
             }
         }
 
-        // 사이드바 열기/닫기
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // 탭(메뉴) 전환
         function switchTab(tabId) {
             const contents = document.getElementsByClassName('tab-content');
             for (let i = 0; i < contents.length; i++) {
@@ -440,7 +461,6 @@
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
 
-            // 탭 선택 후 모바일 사이드바 닫기
             document.getElementById('sidebar').classList.remove('open');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
